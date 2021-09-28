@@ -1,0 +1,242 @@
+image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/alpine/git:v2.30.2
+#image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/alpine/git@sha256:60a83af746ba7121bc40b1d13c064b76735aacf98c4e74878e4f6379d824273
+
+stages:
+  - test 
+  - build
+  - deploy
+
+before_script:
+  - echo "PIPELINE_CONTEXT:"
+  - echo "________________________________________________________________________________________"
+  - echo "CONFIG (SSH, GIT, VERSIONING):"
+  # Configure SSH access to project repo:
+  - mkdir ~/.ssh 
+  - mv $GIT_KEY  ~/.ssh/id_rsa 
+  - mv $GIT_HOST ~/.ssh/known_hosts
+  - chmod 600 ~/.ssh/id_rsa  
+  # SSH client, agent and git required:
+  - apk update && apk add openssh-client git > /dev/null 2>&1 
+  - eval "$(ssh-agent -s)"
+  - ssh-add ~/.ssh/id_rsa  
+  # Git Authentication:
+  - git remote set-url origin git@$CI_SERVER_HOST:$CI_PROJECT_PATH.git 
+  - git config --global user.name "MN8-CICD" 
+  - git config --global user.email "$GITLAB_USER_EMAIL" 
+  # VERSIONING:
+  # SET CURRENT VERSION: 
+  - git fetch --all --tags
+  - if [[ $(git tag | wc -l) != 0 ]]; then TAG=$(git describe --tags $(git rev-list --tags --max-count=1)) ; CURRENT="${TAG:1}" ; else CURRENT=0.0.0 ; fi
+  # SET NEXT VERSION:
+  - RESOLVE=0
+  - MASTER=0
+  - major=$(echo $CURRENT | cut -d'.' -f1)
+  - minor=$(echo $CURRENT | cut -d'.' -f2)
+  - patch=$(echo $CURRENT | cut -d'.' -f3)
+  - LABELS="$CI_MERGE_REQUEST_LABELS"
+  - test "${LABELS#*major}" != "$LABELS" && major=$(expr $major + 1) && minor=0 && patch=0
+  - test "${LABELS#*minor}" != "$LABELS" && minor=$(expr $minor + 1) && patch=0
+  - test "${LABELS#*patch}" != "$LABELS" && patch=$(expr $patch + 1)  
+  - test "${LABELS#*resolve}" != "$LABELS" && RESOLVE=1 # Enable automated release tagging
+  - test "${LABELS#*stable}" != "$LABELS" && MASTER=1 # Enable separate tagging of merge to master commit
+  - NEXT="$major.$minor.$patch" 
+  # EVENT TYPE:
+  - ISSUE=${CI_COMMIT_BRANCH%%-*}
+  - if [[ $ISSUE == "development" || $ISSUE == "master" ]] ; then EVENT_TYPE="RELEASE" ; elif [[ $CI_PIPELINE_SOURCE == "merge_request_event" ]] ; then EVENT_TYPE="MERGE_REQUEST" ; else EVENT_TYPE="SNAPSHOT" ; fi
+  - echo "ENV VARIABLES:"
+  - echo "________________________________________________________________________________________" 
+  # PREDEFINED ENV VARS:
+  - echo $CI_PIPELINE_SOURCE
+  - echo $CI_COMMIT_BRANCH 
+  - echo $CI_MERGE_REQUEST_EVENT_TYPE
+  - echo $CI_MERGE_REQUEST_ID
+  - echo $CI_MERGE_REQUEST_LABELS
+  - echo $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME 
+  - echo $CI_MERGE_REQUEST_TARGET_BRANCH_NAME 
+  - echo $CI_COMMIT_TITLE
+  # CUSTOM ENV VARS/ARTIFACTS:
+  - echo $EVENT_TYPE > EVENT_TYPE.txt
+  - echo $ISSUE > ISSUE.txt
+  - echo $CURRENT > CURRENT.txt
+  - echo $NEXT > NEXT.txt
+  - echo $RESOLVE > RESOLVE.txt
+  - echo $MASTER > MASTER.txt
+  # CUSTOM ENV VARS/ARTIFACTS:
+  - cat EVENT_TYPE.txt
+  - cat ISSUE.txt
+  - cat CURRENT.txt
+  - cat NEXT.txt
+  - cat RESOLVE.txt
+  - cat MASTER.txt
+  - echo "________________________________________________________________________________________"
+
+Test:
+  # image: 
+  #   name: 
+  #   entrypoint: [""]
+  stage: test
+  tags: 
+    - kaniko 
+  script:
+    # Check for date/time of most recent TAG:
+    - if [[ $EVENT_TYPE == "RELEASE" ]] ; then git show v$CURRENT
+    - tagdate=$(git for-each-ref --shell --format="%(taggerdate:format:%s)" refs/tags/v$CURRENT)
+    - tagdate=$(echo $tagdate | cut -d "'" -f 2)
+    - now=$(date +%s)
+    - lapse=$(( now - tagdate ))
+    - echo $tagdate
+    - echo $now
+    - echo $lapse ; fi 
+    # Stop Pipeline for RELEASE type if TAG is older than amount of seconds (default 1800s=30min).  This prevents over-write of release images & deploments:
+    - if [[ "$lapse" -gt 3600 && $EVENT_TYPE == "RELEASE" && $CI_COMMIT_BRANCH == "development"  ]] ; then echo "Invalid RELEASE TAG for automated build and deployment - TAG too old" ;  exit 1 ; fi
+
+    # UNIT-TESTS:
+    #######################################
+    - echo "TEST JOB"
+
+
+    #######################################
+
+    # Create Versioning Artifacts:
+  artifacts:
+    paths: 
+      - EVENT_TYPE.txt
+      - ISSUE.txt
+      - CURRENT.txt
+      - NEXT.txt
+      - RESOLVE.txt
+  rules: # Do not run for tag commit or merge request event:
+    - if: '$CI_COMMIT_TAG != null'
+      when: never 
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event"'
+
+Tag:
+  # image: 
+  #   name: 
+  #   entrypoint: [""]
+  stage: test
+  tags: 
+    - kaniko
+  script:
+    # DOCKERHUB Rate Limits:
+    - echo "DOCKERHUB RATE LIMITS:"
+    - apk add curl jq
+    - |
+      TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq --raw-output .token) &&
+      curl --head --header "Authorization: Bearer $TOKEN" "https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest" 2>&1 | grep ratelimit
+    # Prevent feature branch merge into master:
+    - if [[ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "development" ]] ; then echo "Merge of feature branch into Master not allowed" ; exit 1 ; fi 
+    
+    # TAG RELEASE:
+    #######################################
+    - echo "TAG JOB"
+    # Check final merge-request commit:  
+    - if [ "$CI_COMMIT_TITLE" = "Resolve" ] && [ $RESOLVE = 0 ] ; then echo "Please activate the 'resolve.tag' label to TAG final merge-request commit" ; exit 1 ; fi 
+    - if [ "$CI_COMMIT_TITLE" != "Resolve" ] && [ $RESOLVE = 1 ] ; then echo "Please run the resolve.tag script to TAG final merge-request commit" ; exit 1 ; fi 
+    - if [ "$CI_COMMIT_TITLE" = "Resolve" ] && [ $RESOLVE = 1 ] && [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != development ] ; then echo "Only Tag of merge to development allowed" ; exit 1 ; fi 
+    - if [ "$CI_COMMIT_TITLE" = "Resolve" ] && [ $RESOLVE = 1 ] && [ "${LABELS#*major}" = "$LABELS" ] && [ "${LABELS#*minor}" = "$LABELS" ] && [ "${LABELS#*patch}" = "$LABELS" ] ; then echo "Please a select a label for the merge request - patch, minor or major" ; exit 1 ; fi 
+    # Annotate TAG: includes checksum; tagger name, email, date; tagging message
+    - if [[ $RESOLVE == 1 ]] ; then echo "TAG RELEASE" ; git tag -a v$NEXT -m "Release v$NEXT" ; git push origin "v$NEXT" ; echo "Project has been tagged v$NEXT" ; fi
+    # Optionally TAG merge to master:
+    - if [ $MASTER == 1 ] && [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "master" ] ; then echo "TAGGING MERGE TO MASTER" ; git tag -a m$CURRENT -m "Release m$CURRENT" ; git push origin "m$CURRENT" ; echo "Project has been tagged m$CURRENT" ; fi
+    - if [ $MASTER == 0 ] && [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "master" ] ; then echo "MERGE TO MASTER not tagged" ; exit 1 ; fi
+    #######################################
+  artifacts:
+    paths: 
+      - EVENT_TYPE.txt
+      - ISSUE.txt
+      - CURRENT.txt
+      - NEXT.txt
+      - RESOLVE.txt
+  rules: # Run job for every merge request event:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+Build:
+  image:
+    name: "gcr.io/kaniko-project/executor:debug"
+    # name: "${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/hseeberger/scala-sbt@sha256:080eb873b5d3418bde869d17a231fb86062b23a166fea725d4ba6f1c2ec0d3d7"
+    entrypoint: [""]
+  before_script: # Overrride default before_script to load artifacts as environment variables
+    - EVENT_TYPE=$(cat EVENT_TYPE.txt) && echo $EVENT_TYPE
+    - ISSUE=$(cat ISSUE.txt) && echo $ISSUE
+    - CURRENT=$(cat CURRENT.txt) && echo $CURRENT
+    - NEXT=$(cat NEXT.txt) && echo $NEXT
+    - RESOLVE=$(cat RESOLVE.txt) && echo $RESOLVE
+  stage: build
+  tags: 
+    - kaniko
+  script: 
+    # Get issue number for SNAPSHOT or "development/master" for merge commit:
+    - if [[ $EVENT_TYPE == "RELEASE" ]] ; then export TAG=$CURRENT  ; else export TAG=$CURRENT-SNAPSHOT-$ISSUE ; fi
+    - if [ "$CI_COMMIT_TITLE" = "Resolve" ] && [ $RESOLVE = 0 ] && [ "$CI_PIPELINE_SOURCE" = "merge_request_event" ] ; then echo "Please activate the 'resolve.tag' label to TAG final merge-request commit" ; exit 1 ; fi
+    - if [ "$CI_COMMIT_TITLE" = "Resolve" ] && [ $RESOLVE = 1 ] ; then export TAG=$NEXT ; fi
+    - echo "$CI_REGISTRY_IMAGE":"$TAG" 
+
+    # BUILD-JOB
+    #######################################
+    - echo "BUILD JOB"
+    # KANIKO:
+    - mkdir -p /kaniko/.docker
+    - echo $DOCKER_AUTH_CONFIG > /kaniko/.docker/config.json
+    - /kaniko/executor --cache=true --cache-copy-layers --context  $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:$TAG
+    #######################################  
+
+  rules: #Only build SNAPSHOTS or merge commits , no merge requests or tag commits; skip redundant build job for push event of final code review commit ie. "Resolve" commit:
+    - if: '$CI_COMMIT_TAG != null'
+      when: never
+    - if: '$CI_COMMIT_TITLE == "Resolve" && $CI_PIPELINE_SOURCE != "merge_request_event"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event"'
+    - if: '$CI_COMMIT_TITLE == "Resolve"'
+      when: always
+
+Deploy: 
+  image: # use appropriate Helm and Kubectl versions -> Corresponding to current state of the stack.
+    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/lwolf/helm-kubectl-docker:v1.19.3-v3.3.4
+#   name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/lwolf/helm-kubectl-docker@sha256:91f020ab1352f8c06455b1f886f3b772dc2a2484fc9c6edcbc97a6eb77d4b309  
+    entrypoint: [""]
+  stage: deploy
+  tags: 
+    - kaniko
+  script: 
+    # DOCKERHUB Rate Limits:
+    - echo "DOCKERHUB RATE LIMITS:"
+    - apk add curl jq
+    - |
+      TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq --raw-output .token) &&
+      curl --head --header "Authorization: Bearer $TOKEN" "https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest" 2>&1 | grep ratelimit
+    # Set Image TAG:
+    - TAG=$CURRENT 
+    # Authenticate Gitlab to the DEV cluster using kubectl:
+    - kubectl config set-cluster k8s --server="$KUBE_URL_NATIVE" --certificate-authority="$KUBE_CA_PEM" 
+    - kubectl config set-credentials gitlab-admin --token="$KUBE_TOKEN"
+    - kubectl config set-context mn8 --cluster=k8s --user=gitlab-admin --namespace="$KUBE_NAMESPACE"
+    - kubectl config use-context mn8 
+
+    # DEPLOY-JOB
+    #######################################
+    - echo "DEPLOY STAGE"
+    # Default: Deploy to DEV
+    # KUBECTL:
+    # - kubectl get all -n $KUBE_NAMESPACE
+    # HELM:
+    - helm ls -n $KUBE_NAMESPACE
+    - helm package --app-version=$TAG --version=$TAG $HELM_CHART_NAME
+    - helm upgrade --install --atomic --timeout 1800s --reset-values -n $KUBE_NAMESPACE $HELM_RELEASE_NAME $HELM_CHART_NAME-$TAG.tgz
+
+    # Deploy to STAGING for a merge to Master:
+    # Authenticate Gitlab to the STAGING cluster using kubectl:
+    - if [[ $CI_COMMIT_BRANCH == "master" ]] ; then
+       kubectl config set-cluster k8s --server="$KUBE_URL_STAGING_LOCAL" --certificate-authority="$KUBE_CA_PEM_STAGING" ;
+       kubectl config set-credentials gitlab-admin --token="$KUBE_TOKEN_STAGING" ;
+       kubectl config set-context mn8 --cluster=k8s --user=gitlab-admin --namespace="$KUBE_NAMESPACE" ;
+       kubectl config use-context mn8 ; 
+       helm ls -n $KUBE_NAMESPACE ; 
+       helm upgrade --install --atomic --timeout 1800s -f values-staging.yaml -n $KUBE_NAMESPACE $HELM_RELEASE_NAME $HELM_CHART_NAME-$TAG.tgz ; fi
+    #######################################
+
+  rules: # Only deploy for merge commits:
+    - if: "$CI_COMMIT_TAG != null"
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "development"'
+    - if: '$CI_COMMIT_BRANCH == "master"'
