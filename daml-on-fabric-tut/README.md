@@ -9,3 +9,6 @@ More specifically we will be:
 - Deploying our create-daml-app code to our Fabric ledger where it will record its state
 - Running a JSON endpoint that automatically creates every endpoint we need for our Daml application
 - Starting up a React UI that will consume these JSON endpoints with no lower level interaction with Daml or Fabric necessary
+
+## Pre-requisites
+

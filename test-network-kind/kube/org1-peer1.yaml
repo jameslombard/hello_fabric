@@ -69,7 +69,7 @@ spec:
       initContainers:
       - name: fabric-ccs-builder
         # todo: publish this image to docker hub.  It's currently read from the kind docker context.
-        image: hyperledgendary/fabric-ccs-builder
+        image: gitlab.mn8.ee:4567/dev/hyperledger-fabric/fabric-ccs-builder
         imagePullPolicy: IfNotPresent
         command: [sh, -c]
         args: ["cp /go/bin/* /var/hyperledger/fabric/chaincode/ccs-builder/bin/"]

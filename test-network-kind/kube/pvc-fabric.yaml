@@ -9,9 +9,22 @@ kind: PersistentVolumeClaim
 metadata:
   name: fabric
 spec:
-  volumeName: fabric
+  storageClassName: rook-cephfs
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 1Gi
+
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: fabric
+#   namespace: fabric-network
+# spec:
+#   storageClassName: rook-cephfs
+#   accessModes:
+#     - ReadWriteMany
+#   resources:
+#     requests:
+#       storage: 15Gi

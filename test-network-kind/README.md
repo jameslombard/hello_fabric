@@ -61,7 +61,6 @@ kind load docker-image hyperledgendary/fabric-ccs-builder
 
 Create a dedicated namespace and persistent volume for the test-network:
 ```shell
-kubectl create -f kube/pv-fabric.yaml
 kubectl create -f kube/ns-test-network.yaml
 kubectl -n test-network create -f kube/pvc-fabric.yaml
 ```
