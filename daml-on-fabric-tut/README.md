@@ -1,6 +1,6 @@
 # Beginner Tutorial
 
-https://daml.com/learn/deploying-daml/daml-on-fabric
+Reference: https://daml.com/learn/deploying-daml/daml-on-fabric
 
 More specifically we will be:
 
