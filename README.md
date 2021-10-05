@@ -1,6 +1,6 @@
 # hello_fabric
 
-Project for understanding fabric infrastructure and integration with DAML.
+Project for understanding fabric infrastructure and integration with DAML. The primary aim of this project is to integrate a hyperledger fabric test network with DAML smart-contract code using the daml-on-fabric driver.
 
 ## References
 

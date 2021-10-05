@@ -103,112 +103,112 @@ Generating e6de631e9f140f1f0bac42e2066ae96f16faaba0cfe55a7201c0ce8a16723ec7
 - sbt
   - Using SDKMan: 
 
-```
-  curl -s "https://get.sdkman.io" | bash
+    ```
+    curl -s "https://get.sdkman.io" | bash
 
-                                -+syyyyyyys:
-                            `/yho:`       -yd.
-                         `/yh/`             +m.
-                       .oho.                 hy                          .`
-                     .sh/`                   :N`                `-/o`  `+dyyo:.
-                   .yh:`                     `M-          `-/osysoym  :hs` `-+sys:      hhyssssssssy+
-                 .sh:`                       `N:          ms/-``  yy.yh-      -hy.    `.N-````````+N.
-               `od/`                         `N-       -/oM-      ddd+`     `sd:     hNNm        -N:
-              :do`                           .M.       dMMM-     `ms.      /d+`     `NMMs       `do
-            .yy-                             :N`    ```mMMM.      -      -hy.       /MMM:       yh
-          `+d+`           `:/oo/`       `-/osyh/ossssssdNMM`           .sh:         yMMN`      /m.
-         -dh-           :ymNMMMMy  `-/shmNm-`:N/-.``   `.sN            /N-         `NMMy      .m/
-       `oNs`          -hysosmMMMMydmNmds+-.:ohm           :             sd`        :MMM/      yy
-      .hN+           /d:    -MMMmhs/-.`   .MMMh   .ss+-                 `yy`       sMMN`     :N.
-     :mN/           `N/     `o/-`         :MMMo   +MMMN-         .`      `ds       mMMh      do
-    /NN/            `N+....--:/+oooosooo+:sMMM:   hMMMM:        `my       .m+     -MMM+     :N.
-   /NMo              -+ooooo+/:-....`...:+hNMN.  `NMMMd`        .MM/       -m:    oMMN.     hs
-  -NMd`                                    :mm   -MMMm- .s/     -MMm.       /m-   mMMd     -N.
- `mMM/                                      .-   /MMh. -dMo     -MMMy        od. .MMMs..---yh
- +MMM.                                           sNo`.sNMM+     :MMMM/        sh`+MMMNmNm+++-
- mMMM-                                           /--ohmMMM+     :MMMMm.       `hyymmmdddo
- MMMMh.                  ````                  `-+yy/`yMMM/     :MMMMMy       -sm:.``..-:-.`
- dMMMMmo-.``````..-:/osyhddddho.           `+shdh+.   hMMM:     :MmMMMM/   ./yy/` `:sys+/+sh/
- .dMMMMMMmdddddmmNMMMNNNNNMMMMMs           sNdo-      dMMM-  `-/yd/MMMMm-:sy+.   :hs-      /N`
-  `/ymNNNNNNNmmdys+/::----/dMMm:          +m-         mMMM+ohmo/.` sMMMMdo-    .om:       `sh
-     `.-----+/.`       `.-+hh/`         `od.          NMMNmds/     `mmy:`     +mMy      `:yy.
-           /moyso+//+ossso:.           .yy`          `dy+:`         ..       :MMMN+---/oys:
-         /+m:  `.-:::-`               /d+                                    +MMMMMMMNh:`
-        +MN/                        -yh.                                     `+hddhy+.
-       /MM+                       .sh:
-      :NMo                      -sh/
-     -NMs                    `/yy:
-    .NMy                  `:sh+.
-   `mMm`               ./yds-
-  `dMMMmyo:-.````.-:oymNy:`
-  +NMMMMMMMMMMMMMMMMms:`
-    -+shmNMMMNmdy+:`
-
-
-                                                                 Now attempting installation...
+                                    -+syyyyyyys:
+                                `/yho:`       -yd.
+                            `/yh/`             +m.
+                        .oho.                 hy                          .`
+                        .sh/`                   :N`                `-/o`  `+dyyo:.
+                    .yh:`                     `M-          `-/osysoym  :hs` `-+sys:      hhyssssssssy+
+                    .sh:`                       `N:          ms/-``  yy.yh-      -hy.    `.N-````````+N.
+                `od/`                         `N-       -/oM-      ddd+`     `sd:     hNNm        -N:
+                :do`                           .M.       dMMM-     `ms.      /d+`     `NMMs       `do
+                .yy-                             :N`    ```mMMM.      -      -hy.       /MMM:       yh
+            `+d+`           `:/oo/`       `-/osyh/ossssssdNMM`           .sh:         yMMN`      /m.
+            -dh-           :ymNMMMMy  `-/shmNm-`:N/-.``   `.sN            /N-         `NMMy      .m/
+        `oNs`          -hysosmMMMMydmNmds+-.:ohm           :             sd`        :MMM/      yy
+        .hN+           /d:    -MMMmhs/-.`   .MMMh   .ss+-                 `yy`       sMMN`     :N.
+        :mN/           `N/     `o/-`         :MMMo   +MMMN-         .`      `ds       mMMh      do
+        /NN/            `N+....--:/+oooosooo+:sMMM:   hMMMM:        `my       .m+     -MMM+     :N.
+    /NMo              -+ooooo+/:-....`...:+hNMN.  `NMMMd`        .MM/       -m:    oMMN.     hs
+    -NMd`                                    :mm   -MMMm- .s/     -MMm.       /m-   mMMd     -N.
+    `mMM/                                      .-   /MMh. -dMo     -MMMy        od. .MMMs..---yh
+    +MMM.                                           sNo`.sNMM+     :MMMM/        sh`+MMMNmNm+++-
+    mMMM-                                           /--ohmMMM+     :MMMMm.       `hyymmmdddo
+    MMMMh.                  ````                  `-+yy/`yMMM/     :MMMMMy       -sm:.``..-:-.`
+    dMMMMmo-.``````..-:/osyhddddho.           `+shdh+.   hMMM:     :MmMMMM/   ./yy/` `:sys+/+sh/
+    .dMMMMMMmdddddmmNMMMNNNNNMMMMMs           sNdo-      dMMM-  `-/yd/MMMMm-:sy+.   :hs-      /N`
+    `/ymNNNNNNNmmdys+/::----/dMMm:          +m-         mMMM+ohmo/.` sMMMMdo-    .om:       `sh
+        `.-----+/.`       `.-+hh/`         `od.          NMMNmds/     `mmy:`     +mMy      `:yy.
+            /moyso+//+ossso:.           .yy`          `dy+:`         ..       :MMMN+---/oys:
+            /+m:  `.-:::-`               /d+                                    +MMMMMMMNh:`
+            +MN/                        -yh.                                     `+hddhy+.
+        /MM+                       .sh:
+        :NMo                      -sh/
+        -NMs                    `/yy:
+        .NMy                  `:sh+.
+    `mMm`               ./yds-
+    `dMMMmyo:-.````.-:oymNy:`
+    +NMMMMMMMMMMMMMMMMms:`
+        -+shmNMMMNmdy+:`
 
 
-Looking for a previous installation of SDKMAN...
-Looking for unzip...
-Looking for zip...
-Looking for curl...
-Looking for sed...
-Installing SDKMAN scripts...
-Create distribution directories...
-Getting available candidates...
-Prime the config file...
-Download script archive...
-######################################################################## 100.0%
-Extract script archive...
-Install scripts...
-Install contributed software...
-renamed '/root/.sdkman/tmp/stage/contrib/completion' -> '/root/.sdkman/contrib/completion'
-Set version to 5.12.4 ...
-Attempt update of interactive bash profile on regular UNIX...
-Added sdkman init snippet to /root/.bashrc
-Attempt update of zsh profile...
-Updated existing /root/.zshrc
+                                                                    Now attempting installation...
+
+
+    Looking for a previous installation of SDKMAN...
+    Looking for unzip...
+    Looking for zip...
+    Looking for curl...
+    Looking for sed...
+    Installing SDKMAN scripts...
+    Create distribution directories...
+    Getting available candidates...
+    Prime the config file...
+    Download script archive...
+    ######################################################################## 100.0%
+    Extract script archive...
+    Install scripts...
+    Install contributed software...
+    renamed '/root/.sdkman/tmp/stage/contrib/completion' -> '/root/.sdkman/contrib/completion'
+    Set version to 5.12.4 ...
+    Attempt update of interactive bash profile on regular UNIX...
+    Added sdkman init snippet to /root/.bashrc
+    Attempt update of zsh profile...
+    Updated existing /root/.zshrc
 
 
 
-All done!
+    All done!
 
 
-Please open a new terminal, or run the following in the existing one:
+    Please open a new terminal, or run the following in the existing one:
 
-    source "/root/.sdkman/bin/sdkman-init.sh"
+        source "/root/.sdkman/bin/sdkman-init.sh"
 
-Then issue the following command:
+    Then issue the following command:
 
-    sdk help
+        sdk help
 
-Enjoy!!!
+    Enjoy!!!
 
-```
+    ```
 
-Install sbt:
+    Install sbt:
 
 
-```
+    ```
 
-$ source "$HOME/.sdkman/bin/sdkman-init.sh"
-$ 
-$ sdk install sbt 1.2.8
-==== BROADCAST =================================================================
-* 2021-10-04: jbang 0.81.1 available on SDKMAN! https://github.com/jbangdev/jbang/releases/tag/v0.81.1
-* 2021-10-02: jbang 0.81.0 available on SDKMAN! https://github.com/jbangdev/jbang/releases/tag/v0.81.0
-* 2021-10-01: micronaut 3.0.3 available on SDKMAN!
-================================================================================
+    $ source "$HOME/.sdkman/bin/sdkman-init.sh"
+    $ 
+    $ sdk install sbt 1.2.8
+    ==== BROADCAST =================================================================
+    * 2021-10-04: jbang 0.81.1 available on SDKMAN! https://github.com/jbangdev/jbang/releases/tag/v0.81.1
+    * 2021-10-02: jbang 0.81.0 available on SDKMAN! https://github.com/jbangdev/jbang/releases/tag/v0.81.0
+    * 2021-10-01: micronaut 3.0.3 available on SDKMAN!
+    ================================================================================
 
-Downloading: sbt 1.2.8
+    Downloading: sbt 1.2.8
 
-In progress...
+    In progress...
 
-################################################################################################################################### 100.0%
+    ################################################################################################################################### 100.0%
 
-Installing: sbt 1.2.8
-Done installing!
-```
+    Installing: sbt 1.2.8
+    Done installing!
+    ```
 
   - Arch-linux: `yay -S sbt`
 
