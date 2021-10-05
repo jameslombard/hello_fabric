@@ -101,7 +101,7 @@ Generating e6de631e9f140f1f0bac42e2066ae96f16faaba0cfe55a7201c0ce8a16723ec7
 ### Pre-requisites
 
 - sbt
-  - Using SDKMan 
+  - Using SDKMan: 
 
 ```
   curl -s "https://get.sdkman.io" | bash
@@ -210,5 +210,5 @@ Installing: sbt 1.2.8
 Done installing!
 ```
 
-- Arch-linux: `yay -S sbt`
+  - Arch-linux: `yay -S sbt`
 
