@@ -1,7 +1,5 @@
 
-[[_TOC_]]
-
-# MN8 Usage
+Reference: https://github.com/digital-asset/daml-on-fabric
 
 # DAML on Fabric
 
